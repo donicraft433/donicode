@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombol Pindah Halaman</title>
+    <style>
+        /* Gaya untuk teks dan tombol agar lebih menarik */
+        h1 {
+            color: #2c3e50; /* Warna teks gelap */
+            text-align: center; /* Rata tengah */
+        }
+
+        .tombol-pindah {
+            background-color: #3498db; /* Warna tombol biru */
+            color: white; /* Warna teks tombol */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            left: 100px;
+        }
+
+        .tombol-pindah:hover {
+            background-color: #2980b9; /* Warna berubah saat disentuh */
+        }
+    </style>
+</head>
+<body>
+    <!-- Judul dengan warna teks gelap -->
+    <h1>Selamat Datang di Website Kami</h1>
+
+    <!-- Tombol 1: Pindah ke halaman lain di website lokal -->
+    <!-- Tombol 2: Pindah ke website luar -->
+    <button class="tombol-pindah" onclick="pindahKeWebsiteLuar()">
+        gunshot</>
+    </button>
+
+    <script>
+        // Fungsi untuk pindah ke halaman lokal di website kamu
+        function pindahKeHalaman(namaFile) {
+            window.location.href = namaFile;
+        }
+
+        // Fungsi untuk pindah ke website luar
+        function pindahKeWebsiteLuar() {
+            window.location.href = "https://www.google.com";
+        }
+    </script>
+</body>
+</html>gity
