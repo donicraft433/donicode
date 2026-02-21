@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>gunshoter 2d</title>
+
+<style>
+/* Atur seluruh halaman agar tidak bisa digeser dan penuh layar */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw; /* Lebar penuh layar */
+  height: 100vh; /* Tinggi penuh layar */
+  overflow: hidden; /* Matikan scrollbar dan kemampuan geser */
+  position: fixed; /* Jaga posisi halaman tetap di tempat */
+  top: 0;
+  left: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+}
+
+/* Jika ada wadah utama game/website, pastikan juga penuh layar */
+#game-screen, #main-container {
+  width: 100%;
+  height: 100%;
+  position: relative; /* Agar elemen di dalamnya bisa diposisikan secara absolut */
+  overflow: hidden; /* Mencegah elemen di dalamnya menyebabkan scroll */
+}
+    
+
+#game-screen {
+width: 100vw;
+height: 100vh;
+background: #d7d7d7;
+position: relative;
+}
+/* STYLING LAYAR AWAL */
+#start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom, #0a0a23, #1a2a6c);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 40; /* Lebih tinggi dari elemen lain */
+}
+
+#start-title {
+  color: #f1c40f;
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+
+#player {
+width: 45px;
+height: 45px;
+background: #2ecc71;
+border-radius: 50%;
+border: 3px solid black;
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+transition: left 0.3s ease, top 0.3s ease;
+}
+#player::after {
+content:"🔫";
+display: block;
+color: #333;
+font-size: 30px;
+margin-left: -20px;
+margin-top: -35px;
+}
+
+#player::before {
+content:"🔫";
+display: block;
+color: #333;
+font-size: 30px;
+margin-left: 60px;
+margin-top: 5px;
+transform: scaleX(-1); 
+}
+
+
+/* INFO AREA DENGAN BORDER JELAS */
+#info-container {
+position: absolute;
+top: 20px;
+left: 20px;
+right: 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px 15px;
+background: rgba(0,0,0,0.9);
+border: 3px solid #fff;
+border-radius: 8px;
+z-index: 20;
+}
+
+#health-info {
+color: white;
+font-size: 14px;
+}
+
+#game-info {
+color: white;
+font-size: 14px;
+}
+
+/* BAR NYAWA */
+#health-bar-container {
+position: absolute;
+top: 60px;
+left: 20px;
+width: 200px;
+height: 15px;
+background: #333;
+border-radius: 8px;
+padding: 2px;
+border: 2px solid #fff;
+z-index: 20;
+}
+
+#health-bar {
+width: 100%;
+height: 100%;
+background: #27ae60;
+border-radius: 6px;
+transition: width 0.3s ease;
+}
+
+/* NOTIFIKASI DAN TAMPILAN BOOYAH/GAME OVER */
+.small-notif {
+position: absolute;
+top: 370px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.8);
+color: white;
+padding: 8px 12px;
+border-radius: 5px;
+font-size: 12px;
+display: none;
+z-index: 10;
+}
+
+#booyah-screen, #game-over-screen {
+position: absolute;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+background: rgba(0,0,0,0.9);
+display: none;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+z-index: 30;
+}
+
+#booyah-text {
+color: #f1c40f;
+font-size: 48px;
+font-weight: bold;
+margin-bottom: 20px;
+}
+
+#game-over-text {
+color: #e74c3c;
+font-size: 48px;
+font-weight: bold;
+margin-bottom: 20px;
+}
+
+.action-btn {
+padding: 10px 20px;
+background: #27ae60;
+color: white;
+border: 2px solid #fff;
+border-radius: 8px;
+font-size: 18px;
+cursor: pointer;
+}
+
+#game-over-btn {
+background: #e74c3c;
+}
+
+.enemy {
+width: 40px;
+height: 40px;
+background-color: #e74c3c;
+border-radius: 50%;
+position: absolute;
+transition: left 0.3s ease, top 0.3s ease;
+}
+.enemy::after {
+content:"🔫";
+display: block;
+color: #333;
+font-size: 30px;
+margin-left: -20px;
+margin-top: -35px
+}
+.enemy::before {
+content:"🔫";
+display: block;
+color: #333;
+font-size: 30px;
+margin-left: 60px;
+margin-top: 5px;
+transform: scaleX(-1); 
+}
+
+.enemy-health {
+position: absolute;
+bottom: -10px;
+left: 50%;
+transform: translateX(-50%);
+width: 30px;
+height: 5px;
+background: #333;
+border-radius: 3px;
+padding: 1px;
+}
+
+.enemy-health-bar {
+width: 100%;
+height: 100%;
+background: #f39c12;
+border-radius: 2px;
+}
+
+.ammo-item {
+width: 30px;
+height: 30px;
+background: #f1c40f;
+border-radius: 5px;
+position: absolute;
+display: flex;
+justify-content: center;
+align-items: center;
+color: white;
+font-weight: bold;
+font-size: 16px;
+}
+
+/* STYLING MEDKIT */
+.medkit-item {
+width: 30px;
+height: 30px;
+background: #e84393;
+border-radius: 5px;
+position: absolute;
+display: flex;
+justify-content: center;
+align-items: center;
+color: white;
+font-weight: bold;
+font-size: 16px;
+}
+
+/* STYLING PELINDUNG (🛡) */
+.shield-item {
+  width: 30px;
+  height: 30px;
+  background: #3498db;
+  border-radius: 5px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+ 
+#player-shield {
+  position: absolute;
+  font-size: 35px;
+  top: 1000px; /* Sesuaikan dengan posisi player */
+  left: 1000px;
+  transform: translate(-50%, -50%); /* Sejajarkan dengan player */
+  margin-left: 25px; /* Geser sedikit ke kanan atas */
+  margin-top: -25px;
+  display: none;
+  z-index: 5;
+}
+
+/* STYLING TIMER PELINDUNG DI TENGAH ATAS */
+#shield-timer {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: #3498db;
+  padding: 8px 12px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  display: none; /* Sembunyi awalnya */
+  z-index: 20;
+}
+
+/* --- TOMBOL UBAH (tu) --- */
+.tombolubah {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%; /* Bulat */
+  background-color: blue;
+  color: white;
+  border: 3px solid gray;
+  font-size: 18px;
+  position: relative;
+  z-index: 10; /* Bisa menutupi tombol serang */
+  display: none;
+  top: 475px;
+  left: 294px;
+}
+.tombolTim {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    border-radius: 50%;
+    background-color: #7f98ff;
+    left: 2000px;
+    
+}
+#control-area {
+  width: 100vw;
+  height: 150px; /* Tambah tinggi sedikit agar muat kelompok tombol */
+  background: rgba(0,0,0,0.9);
+  position: absolute;
+  top: 410px;
+  left: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 5px 0;
+  box-sizing: border-box;
+}
+
+/* Kelompok Tombol Arah */
+.direction-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.horizontal-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+/* Tombol kontrol tetap sama ukurannya */
+.control-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid white;
+  color: white;
+  font-size: 18px;
+}
+
+/* Tombol khusus */
+#attack-btn {
+  background: rgba(231,76,60,0.7);
+}
+#reload-btn-khusus {
+  background: rgba(128, 128, 128, 0.7);
+  color: #555;
+}
+#reload-btn-khusus.active {
+  background: rgba(52, 152, 219, 0.7);
+  color: white;
+}
+#attack-btn.disabled {
+  background: rgba(128, 128, 128, 0.7);
+  color: #555;
+  pointer-events: none;
+}
+
+/* Sembunyikan area tambahan yang tidak perlu */
+#areaTambahan {
+  display: none;
+}
+
+/* Style layar awal */
+.start-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f8ff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Style yang sudah ada tetap digunakan */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-animation {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.game-container {
+  display: none;
+}
+h1 {
+    color: white;
+    top: 100px;
+}
+#startGameBtn {
+    height: 50px;
+    width: 180px;
+    background-color: lime;
+    border-radius: 20%;
+    border: 3px sodid gray;
+    font-size: 24px;
+    font-color: black;
+}
+
+</style>
+</head>
+<body>
+<!-- Layar awal dengan tombol bernama StartGameBtn -->
+<!-- Layar awal dengan ID dan tombol StartGameBtn -->
+
+<div class="start-screen" id="start-screen">
+  <h1>Selamat Datang di Permainan!</h1>
+  <button id="startGameBtn" class="startGameBtn">Main Sekarang</button>
+</div>
+
+<!-- Layar loading -->
+<div class="loading-screen" id="LoadingScreen" style="display: none;">
+  <div class="loading-animation">Loading...</div>
+</div>
+
+<!-- Kontainer permainan -->
+<div class="game-container" id="GameContainer" style="display: none;">
+  <!-- Isi permainan Anda -->
+</div>
+
+
+<!-- Kontainer permainan -->
+<div class="game-container" style="display: none;">
+  <!-- Isi permainan Anda -->
+</div>
+
+
+<!-- Kontainer permainan -->
+<div class="game-container" style="display: none;">
+  <!-- Isi permainan Anda -->
+</div>
+<div id="game-screen">
+  
+  <!-- Sisanya tetap sama seperti sebelumnya -->
+<div id="player"></div>
+<div id="areaTambahan" class="areaTambahan"></div>
+
+<!-- TIMER PELINDUNG -->
+<div id="shield-timer">🛡 10</div>
+
+<!-- EMOJI PELINDUNG YANG MENJADI PLAYER -->
+<div id="player-shield">🛡</div>
+
+
+<!-- INFO AREA -->
+<div id="info-container">
+<div id="health-info">Nyawa: 10</div>
+<div id="game-info">Peluru: 0 | Musuh: 6</div>
+</div>
+
+<!-- BAR NYAWA -->
+<div id="health-bar-container">
+<div id="health-bar"></div>
+</div>
+
+<!-- NOTIFIKASI -->
+<div class="small-notif" id="main-notif"></div>
+
+<!-- TAMPILAN BOOYAH -->
+<div id="booyah-screen">
+<div id="booyah-text">MENANG!</div>
+<button class="action-btn" id="play-again-btn">Main Lagi</button>
+</div>
+
+<!-- TAMPILAN GAME OVER -->
+<div id="game-over-screen">
+<div id="game-over-text">KALAH!</div>
+<button class="action-btn" id="game-over-btn">Coba Lagi</button>
+</div>
+
+<!-- MUSUH AWAL (6 MUSUH) -->
+<div class="enemy" style="top: 100px; left: 50px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+<div class="enemy" style="top: 150px; left: 150px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+<div class="enemy" style="top: 200px; left: 250px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+<div class="enemy" style="top: 250px; left: 100px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+<div class="enemy" style="top: 300px; left: 200px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+<div class="enemy" style="top: 80px; left: 250px;">
+<div class="enemy-health"><div class="enemy-health-bar"></div></div>
+</div>
+
+<!-- PELURU AWAL -->
+<div class="ammo-item" style="top: 100px; left: 100px;">📟</div>
+<div class="ammo-item" style="top: 200px; left: 150px;">📟</div>
+
+<!-- MEDKIT AWAL -->
+<div class="medkit-item" style="top: 150px; left: 200px;">+</div>
+
+<!-- KONTROL AREA -->
+<div id="control-area">
+  <!-- Tombol Reload di sisi kiri -->
+  <button class="control-btn" id="reload-btn-khusus">🔃</button>
+
+  <!-- Kelompok Tombol Arah (Atas, Kiri, Bawah, Kanan) di tengah -->
+  <div class="direction-group">
+    <button class="control-btn" id="btn-up">↑</button>
+    <div class="horizontal-buttons">
+      <button class="control-btn" id="btn-left">←</button>
+      <button class="control-btn" id="btn-down">↓</button>
+      <button class="control-btn" id="btn-right">→</button>
+    </div>
+  </div>
+
+  <!-- Tombol Serang di sisi kanan -->
+  <button class="control-btn" id="attack-btn">⚔️</button>
+  
+  <button class="tombolTim" id="tombolTim"></button>
+</div>
+
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+    // === REFERENSI ELEMEN ===
+    const player = document.getElementById('player');
+    const gameInfo = document.getElementById('game-info');
+    const healthInfo = document.getElementById('health-info');
+    const healthBar = document.getElementById('health-bar');
+    const mainNotif = document.getElementById('main-notif');
+    const booyahScreen = document.getElementById('booyah-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const gameOverBtn = document.getElementById('game-over-btn');
+    const attackBtn = document.getElementById('attack-btn');
+    const reloadBtn = document.getElementById('reload-btn-khusus');
+    const playerShield = document.getElementById('player-shield');
+    const shieldTimer = document.getElementById('shield-timer');
+    // REFERENSI LAYAR AWAL
+    const startScreen = document.getElementById('start-screen');
+    const startGameBtn = document.getElementById('startGameBtn');
+    // Mengambil elemen menggunakan ID
+const loadingScreen = document.getElementById('LoadingScreen');
+const gameContainer = document.getElementById('GameContainer');
+
+function showLoading() {
+  startScreen.style.display = 'none';
+  gameContainer.style.display = 'none';
+  loadingScreen.style.display = 'flex';
+}
+
+ function hideLoading() {
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+    gameContainer.style.display = 'block';
+    // Jalankan logika memulai game (bukan hanya fungsi startGame kosong)
+    gameActive = true;
+    startGameIntervals(); // Jalankan semua interval game
+    showNotif('Game Dimulai! Siap Bertempur');
+  }, 2000);
+}
+
+
+startGameBtn.addEventListener('click', () => {
+  showLoading();
+  hideLoading();
+});
+
+function gameOver(result) {
+  showLoading();
+  hideLoading();
+}
+
+function startGame() {
+    // Logika permainan saat dimulai
+    gameActive = true;
+    startGameIntervals();
+    healthBar.style.width = '100%';
+    gameInfo.textContent = `Peluru: ${ammo} | Musuh: ${enemyCount}`;
+    healthInfo.textContent = `Nyawa: ${health}`;
+    showNotif('Game Dimulai! Siap Bertempur!');
+}
+
+    // === SUARA ===
+    const LINK_SUARA_RELOAD = "file:///storage/emulated/0/Download/reload.mp3";
+    const LINK_SUARA_TEMBAK = "file:///storage/emulated/0/Download/dwar.mp3";
+    let audioReload, audioTembak;
+
+    // === INISIALISASI SUARA ===
+    function initSuara() {
+        try {
+            audioReload = new Audio(LINK_SUARA_RELOAD);
+            audioTembak = new Audio(LINK_SUARA_TEMBAK);
+            audioReload.preload = "auto";
+            audioTembak.preload = "auto";
+            audioReload.volume = 0.7;
+            audioTembak.volume = 0.7;
+        } catch (err) {
+            console.log("Inisialisasi suara gagal:", err);
+        }
+    }
+
+    function playSuaraReload() {
+        if (audioReload) {
+            try {
+                audioReload.currentTime = 0;
+                audioReload.play().catch(err => {
+                    console.log("Suara reload tidak bisa dimainkan:", err);
+                    showNotif("Suara reload tidak tersedia!");
+                });
+            } catch (err) {
+                console.log("Error memainkan suara reload:", err);
+            }
+        }
+    }
+
+    function playSuaraTembak() {
+        if (audioTembak && ammo > 0) {
+            try {
+                audioTembak.currentTime = 0;
+                audioTembak.play().catch(err => console.log("Suara tembak gagal:", err));
+            } catch (err) {
+                console.log("Error memainkan suara tembak:", err);
+            }
+        }
+    }
+
+    // === VARIABEL GAME ===
+    let ammo = 0;
+    let health = 10;
+    const maxHealth = 10;
+    let enemyCount = 6;
+    let gameActive = false; // Awalnya game tidak aktif (belum mulai)
+    let isShieldActive = false;
+    let shieldTimeout;
+    let isReloadAvailable = false;
+    // VARIABEL INTERVAL UNTUK MENGENDALI GAME LOOP
+    let spawnItemInterval, spawnMusuhInterval, gerakMusuhInterval, cekItemInterval, kurangiHealthInterval;
+
+    // === REFERENSI ELEMEN DINAMIS ===
+    let enemies = document.querySelectorAll('.enemy');
+    let ammoItems = document.querySelectorAll('.ammo-item');
+    let medkitItems = document.querySelectorAll('.medkit-item');
+    let shieldItems = document.querySelectorAll('.shield-item');
+
+    // === FUNGSI UTAMA ===
+    function showNotif(text) {
+        if (gameActive) {
+            mainNotif.textContent = text;
+            mainNotif.style.display = 'block';
+            setTimeout(() => mainNotif.style.display = 'none', 1500);
+        }
+    }
+
+    function updateElementReferences() {
+        enemies = document.querySelectorAll('.enemy');
+        ammoItems = document.querySelectorAll('.ammo-item');
+        medkitItems = document.querySelectorAll('.medkit-item');
+        shieldItems = document.querySelectorAll('.shield-item');
+    }
+
+    // === FUNGSI KONTROL STATUS TOMBOL ===
+    function updateTombolStatus() {
+        if (isReloadAvailable) {
+            reloadBtn.classList.add('active');
+            reloadBtn.classList.remove('disabled');
+            reloadBtn.textContent = '🔃';
+            reloadBtn.style.pointerEvents = 'auto';
+
+            attackBtn.classList.add('disabled');
+            attackBtn.classList.remove('enabled');
+            attackBtn.style.pointerEvents = 'none';
+            attackBtn.textContent = '🔲';
+        } else {
+            reloadBtn.classList.remove('active');
+            reloadBtn.classList.add('disabled');
+            reloadBtn.textContent = '⬛';
+            reloadBtn.style.pointerEvents = 'none';
+
+            attackBtn.classList.remove('disabled');
+            attackBtn.classList.add('enabled');
+            attackBtn.style.pointerEvents = 'auto';
+            attackBtn.textContent = '⚔';
+        }
+    }
+
+    // === BATASI POSISI ELEMEN DI DALAM LAYAR ===
+    function batasiPosisiLayar(elemen) {
+        const layarLebar = window.innerWidth;
+        const layarTinggi = window.innerHeight;
+        
+        const batasKiri = 20;
+        const batasKanan = layarLebar - 40;
+        const batasAtas = 90;
+        const batasBawah = layarTinggi - 200;
+
+        let posX = parseFloat(elemen.style.left) || 0;
+        let posY = parseFloat(elemen.style.top) || 0;
+
+        elemen.style.left = `${Math.max(batasKiri, Math.min(batasKanan, posX))}px`;
+        elemen.style.top = `${Math.max(batasAtas, Math.min(batasBawah, posY))}px`;
+    }
+
+    // === SET POSISI PLAYER AWAL DI TENGAH ===
+    function setPosisiPlayerTengah() {
+        const layarLebar = window.innerWidth;
+        const layarTinggi = window.innerHeight;
+        
+        player.style.left = `${(layarLebar - player.offsetWidth) / 2}px`;
+        player.style.top = `${(layarTinggi - player.offsetHeight) / 2}px`;
+        batasiPosisiLayar(player);
+    }
+
+    // === GERAK MUSUH - TETAP DI LAYAR ===
+    function gerakMusuhJauh() {
+        if (!gameActive) return;
+        const playerX = parseFloat(player.style.left) || window.innerWidth/2;
+        const playerY = parseFloat(player.style.top) || window.innerHeight/2;
+
+        enemies.forEach(enemy => {
+            let musuhX = parseFloat(enemy.style.left) || 0;
+            let musuhY = parseFloat(enemy.style.top) || 0;
+
+            const jarakX = musuhX - playerX;
+            const jarakY = musuhY - playerY;
+            const jarakTotal = Math.sqrt(jarakX*jarakX + jarakY*jarakY);
+
+            if (jarakTotal < 100) {
+                const gerakX = (jarakX / jarakTotal) * 3;
+                const gerakY = (jarakY / jarakTotal) * 3;
+                musuhX += gerakX;
+                musuhY += gerakY;
+            } else {
+                const gerakX = (Math.random() - 0.5) * 2;
+                const gerakY = (Math.random() - 0.5) * 2;
+                musuhX += gerakX;
+                musuhY += gerakY;
+            }
+
+            enemy.style.left = `${musuhX}px`;
+            enemy.style.top = `${musuhY}px`;
+            batasiPosisiLayar(enemy);
+        });
+    }
+
+    // === SPAWN ITEM ===
+    function spawnItem(jenisItem, maksItem) {
+        if (!gameActive) return;
+        const itemSekarang = document.querySelectorAll(jenisItem).length;
+        if (itemSekarang >= maksItem) return;
+
+        const layarLebar = window.innerWidth;
+        const layarTinggi = window.innerHeight;
+        
+        const posX = Math.floor(Math.random() * (layarLebar - 80) + 40);
+        const posY = Math.floor(Math.random() * (layarTinggi - 200) + 100);
+
+        const itemBaru = document.createElement('div');
+        itemBaru.classList.add(jenisItem.replace('.', ''));
+        
+        itemBaru.style.left = `${posX}px`;
+        itemBaru.style.top = `${posY}px`;
+        batasiPosisiLayar(itemBaru);
+
+        if (jenisItem === '.ammo-item') itemBaru.textContent = '📟';
+        if (jenisItem === '.medkit-item') itemBaru.textContent = '+';
+        if (jenisItem === '.shield-item') itemBaru.textContent = '🛡';
+
+        document.getElementById('game-screen').appendChild(itemBaru);
+        updateElementReferences();
+    }
+
+    // === SPAWN MUSUH SETIAP 8 DETIK ===
+    function spawnMusuh() {
+        if (!gameActive) return;
+        const maksMusuh = 10;
+        if (enemies.length >= maksMusuh) return;
+
+        const layarLebar = window.innerWidth;
+        const layarTinggi = window.innerHeight;
+        
+        const posX = Math.floor(Math.random() * (layarLebar - 80) + 40);
+        const posY = Math.floor(Math.random() * (layarTinggi - 200) + 100);
+
+        const musuhBaru = document.createElement('div');
+        musuhBaru.classList.add('enemy');
+        musuhBaru.style.left = `${posX}px`;
+        musuhBaru.style.top = `${posY}px`;
+        batasiPosisiLayar(musuhBaru);
+
+        const healthEnemy = document.createElement('div');
+        healthEnemy.classList.add('enemy-health');
+        const healthBarEnemy = document.createElement('div');
+        healthBarEnemy.classList.add('enemy-health-bar');
+        healthBarEnemy.style.width = '100%';
+        healthEnemy.appendChild(healthBarEnemy);
+        musuhBaru.appendChild(healthEnemy);
+
+        document.getElementById('game-screen').appendChild(musuhBaru);
+        enemyCount++;
+        updateElementReferences();
+        gameInfo.textContent = `Peluru: ${ammo} | Musuh: ${enemyCount}`;
+        showNotif(`Musuh Baru Muncul! Total: ${enemyCount}`);
+    }
+
+    // === AMBIL ITEM ===
+    function cekDanAmbilItem() {
+        if (!gameActive) return;
+        const playerX = parseFloat(player.style.left) || window.innerWidth/2;
+        const playerY = parseFloat(player.style.top) || window.innerHeight/2;
+
+        // Ambil Peluru - Aktifkan Tombol Reload
+        ammoItems.forEach(item => {
+            const itemX = parseFloat(item.style.left);
+            const itemY = parseFloat(item.style.top);
+            if (Math.abs(playerX - itemX) < 25 && Math.abs(playerY - itemY) < 25) {
+                ammo += 5;
+                item.remove();
+                updateElementReferences();
+                gameInfo.textContent = `Peluru: ${ammo} | Musuh: ${enemyCount}`;
+                showNotif('Dapat 5 Peluru! Tekan Tombol 🔃 untuk Reload');
+                
+                isReloadAvailable = true;
+                updateTombolStatus();
+            }
+        });
+
+        // Ambil Medkit
+        medkitItems.forEach(item => {
+            const itemX = parseFloat(item.style.left);
+            const itemY = parseFloat(item.style.top);
+            if (Math.abs(playerX - itemX) < 25 && Math.abs(playerY - itemY) < 25) {
+                health = Math.min(maxHealth, health + 2);
+                healthInfo.textContent = `Nyawa: ${health}`;
+                healthBar.style.width = `${(health/maxHealth)*100}%`;
+                item.remove();
+                updateElementReferences();
+                showNotif('Dapat Medkit! Nyawa +2');
+            }
+        });
+
+        // Ambil Shield
+        shieldItems.forEach(item => {
+            const itemX = parseFloat(item.style.left);
+            const itemY = parseFloat(item.style.top);
+            if (Math.abs(playerX - itemX) < 25 && Math.abs(playerY - itemY) < 25) {
+                aktifkanShield();
+                item.remove();
+                updateElementReferences();
+            }
+        });
+    }
+
+    // === AKTIFKAN SHIELD ===
+    function aktifkanShield() {
+        if (isShieldActive) return;
+        isShieldActive = true;
+        playerShield.style.display = 'block';
+        shieldTimer.style.display = 'block';
+        let waktuSisa = 10;
+        shieldTimer.textContent = `🛡 ${waktuSisa}`;
+
+        shieldTimeout = setInterval(() => {
+            waktuSisa--;
+            shieldTimer.textContent = `🛡 ${waktuSisa}`;
+            if (waktuSisa <= 0) {
+                clearInterval(shieldTimeout);
+                isShieldActive = false;
+                playerShield.style.display = 'none';
+                shieldTimer.style.display = 'none';
+                showNotif('Pelindung Habis!');
+            }
+        }, 1000);
+    }
+
+    // === EVENT TOMBOL ===
+    // Tombol Gerak
+    document.getElementById('btn-left').addEventListener('touchstart', () => {
+        if (!gameActive) return;
+        let x = parseFloat(player.style.left) || window.innerWidth/2;
+        if (x > 20) player.style.left = `${x - 10}px`;
+        batasiPosisiLayar(player);
+    });
+
+    document.getElementById('btn-up').addEventListener('touchstart', () => {
+        if (!gameActive) return;
+        let y = parseFloat(player.style.top) || window.innerHeight/2;
+        if (y > 120) player.style.top = `${y - 10}px`;
+        batasiPosisiLayar(player);
+    });
+
+    document.getElementById('btn-down').addEventListener('touchstart', () => {
+        if (!gameActive) return;
+        let y = parseFloat(player.style.top) || window.innerHeight/2;
+        if (y < window.innerHeight - 130) player.style.top = `${y + 10}px`;
+        batasiPosisiLayar(player);
+    });
+
+    document.getElementById('btn-right').addEventListener('touchstart', () => {
+        if (!gameActive) return;
+        let x = parseFloat(player.style.left) || window.innerWidth/2;
+        if (x < window.innerWidth - 40) player.style.left = `${x + 10}px`;
+        batasiPosisiLayar(player);
+    });
+
+    // Tombol Serang
+    attackBtn.addEventListener('touchstart', () => {
+        if (!gameActive || enemyCount <= 0) {
+            gameActive = false;
+            // Hentikan semua interval jika game berakhir
+            clearAllIntervals();
+            booyahScreen.style.display = 'flex';
+            return;
+        }
+
+        if (ammo > 0) {
+            playSuaraTembak();
+            ammo--;
+            gameInfo.textContent = `Peluru: ${ammo} | Musuh: ${enemyCount}`;
+            
+            const musuh = document.querySelector('.enemy');
+            if (musuh) {
+                const hpMusuh = musuh.querySelector('.enemy-health-bar');
+                let healthMusuh = parseFloat(hpMusuh.style.width) || 100;
+                healthMusuh -= 20;
+                hpMusuh.style.width = `${healthMusuh}%`;
+
+                if (healthMusuh <= 0) {
+                    musuh.remove();
+                    enemyCount--;
+                    updateElementReferences();
+                    if (enemyCount <= 0) {
+                        gameActive = false;
+                        clearAllIntervals();
+                        booyahScreen.style.display = 'flex';
+                    }
+                }
+            }
+        } else {
+            showNotif('Peluru Habis! Tunggu Ammo Baru');
+            isReloadAvailable = false;
+            updateTombolStatus();
+        }
+    });
+
+    // Tombol Reload - Bisa Digunakan Berulang Kali
+    reloadBtn.addEventListener('touchstart', () => {
+        if (!isReloadAvailable || !gameActive) return;
+        
+        playSuaraReload();
+        showNotif('Sedang Reload...');
+        reloadBtn.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+            isReloadAvailable = false;
+            updateTombolStatus();
+            showNotif('Reload Selesai! Bisa Menembak');
+        }, 1000);
+    });
+
+    // === FUNGSI UNTUK MENJALANKAN DAN MENGHENTIKAN INTERVAL ===
+    function startGameIntervals() {
+        // SPAWN ITEM SETIAP 3 DETIK
+        spawnItemInterval = setInterval(() => {
+            spawnItem('.ammo-item', 3);
+            spawnItem('.medkit-item', 2);
+            spawnItem('.shield-item', 1);
+        }, 3000);
+
+        // SPAWN MUSUH SETIAP 8 DETIK
+        spawnMusuhInterval = setInterval(spawnMusuh, 8000);
+
+        // GERAK MUSUH SETIAP 0.1 DETIK
+        gerakMusuhInterval = setInterval(gerakMusuhJauh, 100);
+
+        // CEK ITEM SETIAP 0.5 DETIK
+        cekItemInterval = setInterval(cekDanAmbilItem, 500);
+
+        // PENURUNAN NYAWA SETIAP 5 DETIK
+        kurangiHealthInterval = setInterval(() => {
+            if (!gameActive || isShieldActive) return;
+            health--;
+            healthInfo.textContent = `Nyawa: ${health}`;
+            healthBar.style.width = `${(health/maxHealth)*100}%`;
+            if (health <= 0) {
+                gameActive = false;
+                clearAllIntervals();
+                gameOverScreen.style.display = 'flex';
+            }
+        }, 5000);
+    }
+
+   function clearAllIntervals() {
+    clearInterval(spawnItemInterval);
+    clearInterval(spawnMusuhInterval);
+    clearInterval(gerakMusuhInterval);
+    clearInterval(cekItemInterval);
+    clearInterval(kurangiHealthInterval);
+    if (shieldTimeout) clearInterval(shieldTimeout);
+}
+
+// Fungsi untuk mereset permainan ke kondisi awal
+// Fungsi untuk mereset permainan ke kondisi awal
+function resetGame() {
+  // Hentikan semua interval yang masih berjalan
+  clearAllIntervals();
+
+  // Reset variabel game ke kondisi awal
+  ammo = 0;
+  health = 10;
+  enemyCount = 6;
+  gameActive = false;
+  isShieldActive = false;
+  isReloadAvailable = false;
+  if (shieldTimeout) clearInterval(shieldTimeout);
+
+  // Sembunyikan layar menang/kalah & elemen shield
+  booyahScreen.style.display = 'none';
+  gameOverScreen.style.display = 'none';
+  playerShield.style.display = 'none';
+  shieldTimer.style.display = 'none';
+
+  // Reset tampilan info dan nyawa
+  healthInfo.textContent = `Nyawa: ${health}`;
+  healthBar.style.width = `${(health/maxHealth)*100}%`;
+  gameInfo.textContent = `Peluru: ${ammo} | Musuh: ${enemyCount}`;
+  updateTombolStatus();
+
+  // Hapus semua musuh, item, dan elemen yang dibuat secara dinamis
+  const allEnemies = document.querySelectorAll('.enemy');
+  allEnemies.forEach(enemy => enemy.remove());
+  
+  const allItems = document.querySelectorAll('.ammo-item, .medkit-item, .shield-item');
+  allItems.forEach(item => item.remove());
+
+  // Set posisi player kembali ke tengah
+  setPosisiPlayerTengah();
+
+  // === TAMBAHKAN MUSUH AWAL KEMBALI ===
+  const gameScreen = document.getElementById('game-screen');
+  const enemyPositions = [
+    {top: 100, left: 50}, {top: 150, left: 150}, {top: 200, left: 250},
+    {top: 250, left: 100}, {top: 300, left: 200}, {top: 80, left: 250}
+  ];
+  
+  enemyPositions.forEach(pos => {
+    const musuhBaru = document.createElement('div');
+    musuhBaru.classList.add('enemy');
+    musuhBaru.style.top = `${pos.top}px`;
+    musuhBaru.style.left = `${pos.left}px`;
+    
+    const healthEnemy = document.createElement('div');
+    healthEnemy.classList.add('enemy-health');
+    const healthBarEnemy = document.createElement('div');
+    healthBarEnemy.classList.add('enemy-health-bar');
+    healthBarEnemy.style.width = '100%';
+    healthEnemy.appendChild(healthBarEnemy);
+    musuhBaru.appendChild(healthEnemy);
+    
+    gameScreen.appendChild(musuhBaru);
+  });
+
+  // === TAMBAHKAN ITEM AWAL KEMBALI ===
+  const ammoPositions = [{top: 100, left: 100}, {top: 200, left: 150}];
+  ammoPositions.forEach(pos => {
+    const ammoBaru = document.createElement('div');
+    ammoBaru.classList.add('ammo-item');
+    ammoBaru.style.top = `${pos.top}px`;
+    ammoBaru.style.left = `${pos.left}px`;
+    ammoBaru.textContent = '📟';
+    gameScreen.appendChild(ammoBaru);
+  });
+
+  const medkitBaru = document.createElement('div');
+  medkitBaru.classList.add('medkit-item');
+  medkitBaru.style.top = '150px';
+  medkitBaru.style.left = '200px';
+  medkitBaru.textContent = '+';
+  gameScreen.appendChild(medkitBaru);
+
+  // Update referensi elemen agar data baru terbaca
+  updateElementReferences();
+}
+
+// Tombol Main Lagi & Coba Lagi dengan loading
+playAgainBtn.addEventListener('click', () => {
+  resetGame(); // Reset data permainan dulu
+  showLoading();
+  hideLoading();
+});
+
+gameOverBtn.addEventListener('click', () => {
+  resetGame(); // Reset data permainan dulu
+  showLoading();
+  hideLoading();
+});
+
+
+    // === PENYESUAIAN POSISI SAAT LAYAR DIRESIZE ===
+    window.addEventListener('resize', () => {
+        setPosisiPlayerTengah();
+        enemies.forEach(enemy => batasiPosisiLayar(enemy));
+        ammoItems.forEach(item => batasiPosisiLayar(item));
+        medkitItems.forEach(item => batasiPosisiLayar(item));
+        shieldItems.forEach(item => batasiPosisiLayar(item));
+    });
+
+    // === INISIALISASI AWAL ===
+    initSuara();
+    setPosisiPlayerTengah();
+    updateElementReferences();
+    // Interval game tidak dijalankan di awal (hanya saat tombol main ditekan)
+    isReloadAvailable = false;
+    updateTombolStatus();
+});
+
+</script>
+</body>
+</html>
